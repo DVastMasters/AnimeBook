@@ -29,7 +29,6 @@ export default StyleSheet.create({
     },
     modalDescription: {
         backgroundColor: '#ffff',  
-        color: '#ffffff',
         borderRadius: 2,
         borderColor: '#fcbd75',
         borderWidth: 2

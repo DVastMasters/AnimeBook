@@ -49,7 +49,6 @@ export default StyleSheet.create({
         alignItems: "center",
     },
     modalDescription: {
-        color: '#ffffff',
         borderRadius: 2,
         borderColor: '#fcbd75',
         borderWidth: 2
