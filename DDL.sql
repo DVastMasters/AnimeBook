@@ -1,0 +1,40 @@
+DROP DATABASE IF EXISTS AnimeBook;
+
+CREATE DATABASE AnimeBook;
+
+USE AnimeBook;
+
+CREATE TABLE Anime (
+    id INTEGER UNSIGNED AUTO_INCREMENT PRIMARY KEY ,
+    title VARCHAR(255),
+    image_path VARCHAR(255)
+);
+
+CREATE TABLE Topic (
+    id INTEGER UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    anime_id INTEGER UNSIGNED,
+    title VARCHAR(255),
+    description VARCHAR(255),
+    author VARCHAR(50)
+);
+
+CREATE TABLE Discussion (
+    id INTEGER UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    topic_id INTEGER UNSIGNED,
+    text VARCHAR(255),
+    author VARCHAR(255)
+);
+
+CREATE TABLE Suggestion (
+    id INTEGER UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    about VARCHAR(255)
+);
+ 
+ALTER TABLE Topic ADD CONSTRAINT FK_Topic_2
+    FOREIGN KEY (anime_id)
+    REFERENCES Anime (id);
+ 
+ALTER TABLE Discussion ADD CONSTRAINT FK_Discussion_2
+    FOREIGN KEY (topic_id)
+    REFERENCES Topic (id);

@@ -62,27 +62,6 @@ def search_animes(title, page, page_length):
     return jsonify(animes)
 
 
-@service.route("/anime/<int:id>", methods=["GET"])
-def get_anime_by_id(id):
-    anime = []
-    
-    link = get_database_link()
-    cur = link.cursor(dictionary=True)
-    cur.execute(
-        "SELECT " +  
-            "id, " +
-            "title, " +
-            "image_path " +
-        "FROM " +
-            "Anime " +
-        "WHERE " +
-            "id = " + id
-    )
-    anime = cur.fetchone()
-    
-    return jsonify(anime)
-
-
 @service.route("/suggestion_anime/<string:title>/<string:about>")
 def add_suggestion(title, about):
     response = jsonify(status = "ok", error = "")
