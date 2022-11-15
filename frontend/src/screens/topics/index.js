@@ -101,6 +101,7 @@ export const TopicsScreen = ({ navigation, route }) => {
             (res) => {
                 if (res.data.status == 'ok') {
                     flushFeed()
+                    setAuthorNewTopic("")
                     setOpenCreateTopicScreen(false)
                 } 
             },
