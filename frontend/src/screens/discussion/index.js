@@ -1,15 +1,18 @@
 import React, {useCallback, useEffect, useState} from "react";
 import { Button, FlatList, ImageEditor, Modal, Text, TextInput, useColorScheme, View } from "react-native";
 import styles from "./styles";
+import { getDiscussionsTopic, saveDiscussion } from "../../api";
 
-const TOPICS_PER_PAGE = 3;
 
 export const DiscussionScreen = ({ navigation, route }) => {
     const [discussion, setDiscussion] = useState([]);
 
     const [openCreateCommentScreen, setOpenCreateCommentScreen] = useState(false)
 
+    const [refreshFeeds, setRefreshFeeds] = useState(false)
+
     const [commentText, setCommentText] = useState();
+    const [commentAuthor, setCommentAuthor] = useState();
 
     const showCreateCommentScreen = () => {
         return (
@@ -31,6 +34,15 @@ export const DiscussionScreen = ({ navigation, route }) => {
 
                         placeholder={"Digite a sua contribuição..."}
                     />
+                    <Text>Autor:</Text>
+                    <TextInput
+                        onChangeText={setCommentAuthor}
+                        style={styles.modalDescription}
+
+                        editable={true}
+
+                        placeholder={"Caso queira se identificar, digite seu nome..."}
+                    />
                     <View style={styles.modalButtons}>
                         <Button
                             title="Cancelar" 
@@ -47,26 +59,37 @@ export const DiscussionScreen = ({ navigation, route }) => {
     }
 
     useEffect(() => {  
-        setDiscussion(route.params.topic.discussion);  
         navigation.setOptions({
             headerRight: () => (
                 <Button  color="#758880" title=" + " onPress={() => {setOpenCreateCommentScreen(true)}}/>
             ),
         })
-    }, [])
+
+        getDiscussionsTopic(route.params.topic.id).then(
+            (res) => setDiscussion([...discussion, ...res.data]),
+            (err) => console.log(err)
+        )
+
+    }, [refreshFeeds])
 
     const newComment = () => {
         if (!commentText) {
             return;
         }
 
-        const newComment = {
-            "text": commentText,
-            "author": 'fakeUser',
-        }
+        author = commentAuthor ? commentAuthor : "Anônimo"  
 
-        setDiscussion(discussion.concat(newComment));
-        setOpenCreateCommentScreen(false)
+        saveDiscussion(route.params.topic.id, commentText, author)
+            .then(
+                (res) => {
+                    if (res.data.status == 'ok') {
+                        setDiscussion([])
+                        refreshFeeds ? setRefreshFeeds(false) : setRefreshFeeds(true)
+                        setOpenCreateCommentScreen(false)
+                    } 
+                },
+                (err) => console.log(err)
+            )
     }
 
     const renderItem = ({item}) => (

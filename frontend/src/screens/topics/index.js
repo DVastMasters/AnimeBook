@@ -3,17 +3,20 @@ import { Button, FlatList, Modal, Text, TextInput, useColorScheme, View, ImageBa
 import topicsBank from "../../assets/topics.json"
 import {MemoizedTopicCard }  from "../../components/TopicCard"
 import styles from "./styles";
+import { getAnimeTopics, saveTopic } from "../../api";
 
-const TOPICS_PER_PAGE = 6;
+const TOPICS_PER_PAGE = 4;
 
 export const TopicsScreen = ({ navigation, route }) => {
     const [topics, setTopics] = useState([]);
     const [page, setPage] = useState(1);
     const [refreshing, setRefreshing] = useState(false);
+    const [refreshFeeds, setRefreshFeeds] = useState(false)
 
     const [openCreateTopicScreen, setOpenCreateTopicScreen] = useState(false)
     const [titleNewTopic, setTitleNewTopic] = useState();
     const [descriptionNewTopic, setDescriptionNewTopic] = useState();
+    const [authorNewTopic, setAuthorNewTopic] = useState();
 
     const showCreateTopicScreen = () => {
         return (
@@ -47,6 +50,15 @@ export const TopicsScreen = ({ navigation, route }) => {
 
                         placeholder={"Digite a descrição do tópico..."}
                     />
+                    <Text>Autor:</Text>
+                    <TextInput
+                        maxLength={50}
+                        onChangeText={setAuthorNewTopic}
+                        style={styles.modalDescription}
+                        editable={true}
+
+                        placeholder={"Caso queira se identificar, digite seu nome aqui..."}
+                    />
                     <View style={styles.modalButtons}>
                         <Button
                             title="Cancelar" 
@@ -63,55 +75,47 @@ export const TopicsScreen = ({ navigation, route }) => {
     }
 
     useEffect(() => {
-        loadPage();
         navigation.setOptions({
             headerRight: () => (
                 <Button  color="#758880" title=" + " onPress={() => {setOpenCreateTopicScreen(true)}}/>
             ),
         })
-    }, [])
+
+        getAnimeTopics(route.params.animeId, page, TOPICS_PER_PAGE).then(
+            (res) => setTopics([...topics, ...res.data]),
+            (err) => console.log(err)
+        )
+
+        setRefreshing(false);
+
+    }, [refreshFeeds, page])
 
     const newTopic = () => {
-        console.log(titleNewTopic)
         if (!titleNewTopic) {
             return;
         }
 
-        const newTopic = {
-            "id": 0,
-            "animeId": route.params.animeId,
-            "title": titleNewTopic,
-            "description": descriptionNewTopic,
-            "author": 'fakeUser',
-            "discussion": []
-        }
-
-        setTopics(topics.concat(newTopic));
-        setOpenCreateTopicScreen(false)
-    }
-
-    const loadPage = () => {
-        if (titleNewTopic) {
-            return
-        }
+        const author = authorNewTopic ? authorNewTopic : "Anônimo"
         
-        setTopics((topicsBank.topics.filter((topic) => 
-            (topic.id <= page * TOPICS_PER_PAGE) && topic.animeId == route.params.animeId
-        )));     
-
-        setPage(page + 1);   
-
-        setRefreshing(false);
+        saveTopic(route.params.animeId, titleNewTopic, descriptionNewTopic, author).then(
+            (res) => {
+                if (res.data.status == 'ok') {
+                    flushFeed()
+                    setOpenCreateTopicScreen(false)
+                } 
+            },
+            (err) => console.log(err)
+        )
     }
 
-    const reset = useCallback(() => {
-        setRefreshing(true);
-        setPage(1);
-        loadPage();        
-    }, []);
+    const flushFeed = () => {
+        setRefreshing(true)
+        setTopics([])
+        setPage(1)        
+        refreshFeeds ? setRefreshFeeds(false) : setRefreshFeeds(true)
+    }
 
     const renderItem = ({ item }) => {
-        console.log("Rendering: " + item.id)
         return <MemoizedTopicCard topic={item} navigation={navigation}/>
     }
 
@@ -127,9 +131,9 @@ export const TopicsScreen = ({ navigation, route }) => {
                 keyExtractor={keyExtractor}
                 showsVerticalScrollIndicator={false}
                 data={topics}
-                onEndReached={loadPage}
+                onEndReached={() => setPage(page + 1)}
                 onEndReachedThreshold={0.2}
-                onRefresh={reset}
+                onRefresh={flushFeed}
                 refreshing={refreshing}
                 renderItem={renderItem}
                 style={styles.list}

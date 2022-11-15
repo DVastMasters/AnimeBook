@@ -1,11 +1,11 @@
 import React, {useCallback, useEffect, useState} from "react";
 import { Button, FlatList, Modal, Text, TextInput, useColorScheme, View } from "react-native";
 import {MemoizedAnimeCard} from "../../components/AnimeCard";
-import bancoEstatico from "../../assets/feeds.json"
 import styles from "./styles";
 import Icon from "react-native-vector-icons/AntDesign";
+import { getAnimes, saveSuggestion, searchAnimesByName } from "../../api";
 
-const CARDS_POR_PAGINA = 6;
+const CARDS_PER_PAGE = 6;
 
 export const FeedScreen = ({ navigation }) => {
     const [animeCards, setAnimeCards] = useState([]);
@@ -13,6 +13,7 @@ export const FeedScreen = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
 
     const [searchInput, setSearchInput] = useState();   
+    const [refreshFeeds, setRefreshFeeds] = useState(false)    
 
     const [animeName, setAnimeName] = useState();
     const [animeInfo, setAnimeInfo] = useState();
@@ -69,14 +70,25 @@ export const FeedScreen = ({ navigation }) => {
     }
 
     const newAnime = () => {
-        // TO DO
+        if (!animeName) return;
+        
+        const alertSuccess = () => {
+            setOpenModalCreateAnime(false)
+            alert("Obrigado! Analisaremos a sua sugestão.")
+        }
+        
+        const alertError = () => {
+            alert("Ops! Não foi possível registrar a sua sugestão.")
+        }
 
-        setOpenModalCreateAnime(false)
-        alert("Obrigado! Analisaremos a sua sugestão.")
+        saveSuggestion(animeName, animeInfo)
+            .then(
+                (res) => res.data.status == "ok" ? alertSuccess() : alertError(),
+                (err) => console.log(err)
+            );        
     }
 
     useEffect(() => {
-        loadPage();
         navigation.setOptions({
             title: "Animes",
             headerStyle: styles.header,
@@ -90,7 +102,7 @@ export const FeedScreen = ({ navigation }) => {
                         <Icon 
                             size={20} 
                             name="search1"
-                            onPress={searchAnimes} />                        
+                            onPress={flushFeed}/>                        
                     </View>
                     <View style={styles.addNewAnime}>
                         <Icon 
@@ -103,40 +115,32 @@ export const FeedScreen = ({ navigation }) => {
                 </View>
             )
         })
-    }, [searchInput])
 
-    const loadPage = () => {
-
-        if (searchInput) {
-            return;
+        if(!searchInput){
+            getAnimes(page, CARDS_PER_PAGE)
+                .then(
+                    (res) => setAnimeCards([...animeCards, ...res.data]),
+                    (err) => console.log(err)
+                );        
+            
+        } else {
+            searchAnimesByName(searchInput.toLowerCase(), page, CARDS_PER_PAGE)
+                .then(                   
+                    (res) => setAnimeCards([...animeCards, ...res.data]),
+                    (err) => console.log(err)
+                );
         }
-
-        setAnimeCards(bancoEstatico.feeds.filter((card) => 
-            card.id <= page * CARDS_POR_PAGINA
-        ));     
-
-        setPage(page + 1);   
-
+        
         setRefreshing(false);
+
+    }, [refreshFeeds, page])
+
+    const flushFeed = () => {
+        setRefreshing(true)
+        setAnimeCards([])
+        setPage(1)        
+        refreshFeeds ? setRefreshFeeds(false) : setRefreshFeeds(true)
     }
-
-    searchAnimes = () => {
-        if (!searchInput) {
-            return;
-        }
-
-        setAnimeCards(bancoEstatico.feeds.filter((feed) => 
-            feed.canonicalTitle.toLowerCase().includes(
-                searchInput.toLowerCase()
-            )
-        ))
-    }
-
-    const reset = useCallback(() => {
-        setRefreshing(true);
-        setPage(1);
-        loadPage();        
-    }, []);
 
     const renderItem = ({ item }) => {
         return <MemoizedAnimeCard anime={item} navigation={navigation}/>
@@ -155,9 +159,9 @@ export const FeedScreen = ({ navigation }) => {
                 showsVerticalScrollIndicator={false}
                 data={animeCards}
                 numColumns={2}
-                onEndReached={loadPage}
+                onEndReached={() => setPage(page + 1)}
                 onEndReachedThreshold={0.2}
-                onRefresh={reset}
+                onRefresh={flushFeed}
                 refreshing={refreshing}
                 renderItem={renderItem}
                 style={styles.list}

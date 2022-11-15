@@ -1,0 +1,45 @@
+version: '3'
+services:
+  animes:
+    image: anime_book
+    build: ./dockerfiles/services/
+    hostname: animes
+    ports:
+      - '5001:5000'
+    volumes:
+      - './services/animes:/service'
+    command: python3 service.py
+  discussions:
+    image: anime_book
+    build: ./dockerfiles/services/
+    hostname: discussions
+    ports:
+      - '5002:5000'
+    volumes:
+      - './services/discussions:/service'
+    command: python3 service.py
+  topics:
+    image: anime_book
+    build: ./dockerfiles/services/
+    hostname: topics
+    ports:
+      - '5003:5000'
+    volumes:
+      - './services/topics:/service'
+    command: python3 service.py
+  database:
+    image: mysql
+    hostname: database
+    ports:
+      - '5004:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+  posters:
+    image: posters
+    build: ./dockerfiles/nginx
+    volumes:
+      - './posters:/usr/share/nginx/html'
+    hostname: files
+    ports:
+      - '5005:80'
+    

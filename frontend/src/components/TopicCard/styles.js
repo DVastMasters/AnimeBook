@@ -15,7 +15,7 @@ const boxShadow = Platform.select({
 
 export default StyleSheet.create({
     container: {
-        height: 150,
+        height: 175,
         backgroundColor: '#ffffff',
         borderRadius: 5,
         borderColor: '#000',
