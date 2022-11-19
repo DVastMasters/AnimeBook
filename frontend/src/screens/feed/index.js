@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import { Button, FlatList, Modal, Text, TextInput, useColorScheme, View } from "react-native";
 import {MemoizedAnimeCard} from "../../components/AnimeCard";
 import styles from "./styles";

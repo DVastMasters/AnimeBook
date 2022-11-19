@@ -1,7 +1,5 @@
-import moment from "moment";
 import React from 'react';
-import {Image, Text, TouchableOpacity} from 'react-native';
-import LinearGradient from "react-native-linear-gradient";
+import {Text, TouchableOpacity} from 'react-native';
 import styles from "./styles";
 
 const TopicCard = ({topic, navigation}) => {

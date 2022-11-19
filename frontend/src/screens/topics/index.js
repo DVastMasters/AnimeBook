@@ -1,6 +1,5 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import { Button, FlatList, Modal, Text, TextInput, useColorScheme, View, ImageBackground } from "react-native";
-import topicsBank from "../../assets/topics.json"
 import {MemoizedTopicCard }  from "../../components/TopicCard"
 import styles from "./styles";
 import { getAnimeTopics, saveTopic } from "../../api";

@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useState} from "react";
-import { Button, FlatList, ImageEditor, Modal, Text, TextInput, useColorScheme, View } from "react-native";
+import React, {useEffect, useState} from "react";
+import { Button, FlatList, Modal, Text, TextInput, useColorScheme, View } from "react-native";
 import styles from "./styles";
 import { getDiscussionsTopic, saveDiscussion } from "../../api";
 
